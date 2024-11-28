@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic-Tac-Toe against AI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 5px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .cell {
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            border: 2px solid #000;
+            cursor: pointer;
+        }
+        #message {
+            font-size: 24px;
+            margin-top: 20px;
+        }
+        .popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        .popup-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .popup button {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Tic-Tac-Toe against AI</h1>
+    <div id="message"></div>
+    <div class="board">
+        <div class="cell" data-index="0"></div>
+        <div class="cell" data-index="1"></div>
+        <div class="cell" data-index="2"></div>
+        <div class="cell" data-index="3"></div>
+        <div class="cell" data-index="4"></div>
+        <div class="cell" data-index="5"></div>
+        <div class="cell" data-index="6"></div>
+        <div class="cell" data-index="7"></div>
+        <div class="cell" data-index="8"></div>
+    </div>
+
+    <!-- Popup -->
+    <div id="popup" class="popup">
+        <div class="popup-content">
+            <p id="popup-message"></p>
+            <button onclick="restartGame()">Restart</button>
+        </div>
+    </div>
+
+    <script>
+        let currentPlayer = 'X';  // Human starts
+        let board = ['', '', '', '', '', '', '', '', ''];
+        let gameOver = false;
+
+        const cells = document.querySelectorAll('.cell');
+        const message = document.getElementById('message');
+        const popup = document.getElementById('popup');
+        const popupMessage = document.getElementById('popup-message');
+
+        const winningCombinations = [
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+            [0, 3, 6],
+            [1, 4, 7],
+            [2, 5, 8],
+            [0, 4, 8],
+            [2, 4, 6]
+        ];
+
+        cells.forEach(cell => {
+            cell.addEventListener('click', handleClick);
+        });
+
+        function handleClick(e) {
+            if (gameOver) return;
+            const index = e.target.getAttribute('data-index');
+
+            if (board[index] !== '') return;  // Cell already occupied
+
+            board[index] = currentPlayer;
+            e.target.textContent = currentPlayer;
+
+            if (checkWinner()) {
+                gameOver = true;
+                setTimeout(() => showPopup(`${currentPlayer} wins! here is your hint: Maliwanag kaya kailangan pantakip`), 100);
+            } else if (board.every(cell => cell !== '')) {
+                gameOver = true;
+                setTimeout(() => showPopup('It\'s a draw!'), 100);
+            } else {
+                currentPlayer = 'O';  // AI's turn
+                message.textContent = "AI's turn";
+                aiMove();
+            }
+        }
+
+        function checkWinner() {
+            return winningCombinations.some(combination => {
+                const [a, b, c] = combination;
+                return board[a] === currentPlayer && board[b] === currentPlayer && board[c] === currentPlayer;
+            });
+        }
+
+        function aiMove() {
+            // AI makes a random move
+            const availableMoves = board
+                .map((cell, index) => cell === '' ? index : -1)
+                .filter(index => index !== -1);
+            
+            if (availableMoves.length > 0) {
+                const aiMove = availableMoves[Math.floor(Math.random() * availableMoves.length)];
+                board[aiMove] = 'O';
+                cells[aiMove].textContent = 'O';
+                
+                if (checkWinner()) {
+                    gameOver = true;
+                    setTimeout(() => showPopup("AI wins!"), 100);
+                } else if (board.every(cell => cell !== '')) {
+                    gameOver = true;
+                    setTimeout(() => showPopup('It\'s a draw!'), 100);
+                } else {
+                    currentPlayer = 'X';  // Back to player's turn
+                    message.textContent = "Player's turn";
+                }
+            }
+        }
+
+        function showPopup(messageText) {
+            popupMessage.textContent = messageText;
+            popup.style.display = 'flex';
+        }
+
+        function restartGame() {
+            board = ['', '', '', '', '', '', '', '', ''];
+            gameOver = false;
+            currentPlayer = 'X';
+            message.textContent = "Player's turn";
+            cells.forEach(cell => cell.textContent = '');
+            popup.style.display = 'none';
+        }
+
+        message.textContent = "Player's turn";
+    </script>
+
+</body>
+</html>
